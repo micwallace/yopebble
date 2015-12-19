@@ -1,5 +1,7 @@
 {
-    "appKeys": {},
+    "appKeys": {
+        "REQUEST": 0
+    },
     "capabilities": [
         ""
     ],
@@ -11,6 +13,10 @@
     },
     "sdkVersion": "3",
     "shortName": "YoPebble",
+    "targetPlatforms": [
+        "basalt",
+        "chalk"
+    ],
     "uuid": "38ca7789-52fd-49e2-8b9f-1b1a46bd66b6",
     "versionLabel": "1.0",
     "watchapp": {

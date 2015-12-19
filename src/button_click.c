@@ -2,15 +2,41 @@
 
 static Window *window;
 static TextLayer *text_layer;
-static DictationSession *dictation_session;
+static DictationSession *session;
+
+static void out_sent_handler(DictionaryIterator *sent, void *context) {
+  
+}
+
+static void out_failed_handler(DictionaryIterator *failed, AppMessageResult reason, void *context) {
+  
+}
+
+static void dictation_session_callback(DictationSession *session, DictationSessionStatus status, char *transcription, void *context){
+  // send the message to the phone if successfull
+  if (status==DictationSessionStatusSuccess){
+	  DictionaryIterator *iter;
+	  app_message_outbox_begin(&iter);
+	  Tuplet value = TupletCString(1, transcription);
+	  dict_write_tuplet(iter, &value);
+	  app_message_outbox_send();
+  } else {
+
+  }
+  dictation_session_stop(session);
+  dictation_session_destroy(session);
+}
 
 static void start_dictation(){
-	
+  session = dictation_session_create(0, dictation_session_callback, NULL);
+  dictation_session_enable_confirmation(session, true);
+  dictation_session_enable_error_dialogs(session, true);
+  dictation_session_start(session);	
 }
 
 static void select_click_handler(ClickRecognizerRef recognizer, void *context) {
   text_layer_set_text(text_layer, "Select");
-	start_dictation();
+  start_dictation();
 }
 
 static void up_click_handler(ClickRecognizerRef recognizer, void *context) {
@@ -49,7 +75,13 @@ static void init(void) {
     .unload = window_unload,
   });
   const bool animated = true;
+  // setup app message
   window_stack_push(window, animated);
+  app_message_register_outbox_sent(out_sent_handler);
+  app_message_register_outbox_failed(out_failed_handler);
+  const uint32_t inbound_size = 64;
+  const uint32_t outbound_size = 64;
+  app_message_open(inbound_size, outbound_size);
 }
 
 static void deinit(void) {
